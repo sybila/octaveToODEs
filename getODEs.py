@@ -5,32 +5,32 @@ import re
 Parse parameter from line containing '# fixed'
 """
 def getParameter(line):
-	id = re.search('\((.*)\)', line).group(1)
-	name = line.split(", ")[1]
+	id = re.search('\((.*)\)', line).group(1)				# searching for '(<num>)' where num is my id
+	name = line.split(", ")[1]								# splits by ', ' and takes 2nd part of it
 	return (id, name)
 
 """
 Parse assignment from line containing '# assignment'
 """
 def getAssignment(line):
-	id = re.search('= x\((.*)\) = ', line).group(1)
-	pre = line.split(" = ")[2].split(";")
+	id = re.search('= x\((.*)\) = ', line).group(1)			# searching for '= x(<num>) = ' where num is my id
+	pre = line.split(" = ")[2].split(";")					# splits by ' = ' and then splits 3rd part of it by ';'
 	equation = pre[0]
-	name = pre[1].split(", ")[1].split("  ")[0]
+	name = pre[1].split(", ")[1].split("  ")[0]				# splits by ', ' and then splits 2nd part of it by '  '
 	return [id, name, equation]
 
 """
 Parse ODE from line containing '# reaction'
 """
 def getODE(line):
-	id = re.search('t\((.*)\) =', line).group(1)
-	pre = line.split(" ; ")
-	name = pre[1].split(", ")[1]
-	equation = pre[0].replace("xdot(" + id + ")", name)
-	return (id, name), ' '.join(equation.split())
+	id = re.search('t\((.*)\) =', line).group(1)			# searching for 't(<num>) =' where num is my id
+	pre = line.split(" ; ")									# splits by ' ; '
+	name = pre[1].split(", ")[1]							# splits by ', ' and takes 2nd part of it
+	equation = pre[0].replace("xdot(" + id + ")", name)		# replaces 'xdot(<num>)' with appropriate entity name
+	return (id, name), ' '.join(equation.split())			# removes redundant whitespaces
 
 """
-Replace objects in assignments
+Replace parameters in assignments
 """
 def impoveAssignments(assignments, parameters):
 	return map(lambda assignment: assignment[:-1] + [replaceParameters(assignment[2], parameters)], assignments)
@@ -47,8 +47,7 @@ def replaceParameters(value, parameters):
 Replace parameters in all ODEs
 """
 def replaceODEs(ODEs, parameters):
-	ODEs = map(lambda ODE: replaceParameters(ODE, parameters), ODEs)
-	return ODEs
+	return map(lambda ODE: replaceParameters(ODE, parameters), ODEs)
 
 """
 Print output
