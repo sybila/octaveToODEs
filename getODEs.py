@@ -17,7 +17,7 @@ def getAssignment(line):
 	pre = line.split(" = ")[2].split(";")
 	equation = pre[0]
 	name = pre[1].split(", ")[1].split("  ")[0]
-	return (id, name, equation)
+	return [id, name, equation]
 
 """
 Parse ODE from line containing '# reaction'
@@ -33,12 +33,7 @@ def getODE(line):
 Replace objects in assignments
 """
 def impoveAssignments(assignments, parameters):
-	new_assigmets = []
-	for assignment in assignments:
-		assignment = list(assignment)
-		assignment[2] = replaceParameters(assignment[2], parameters)
-		new_assigmets.append(tuple(assignment))
-	return new_assigmets, parameters
+	return map(lambda assignment: assignment[:-1] + [replaceParameters(assignment[2], parameters)], assignments)
 
 """
 Replace all parameters in a given string
@@ -59,15 +54,11 @@ def replaceODEs(ODEs, parameters):
 Print output
 """
 def nicePrint(ODEs, assignments):
-	print "Ordinary differential equations:"
-	print "_" * 100
-	print 
+	print "Ordinary differential equations:" + "\n" + "_" * 80 + "\n"
 	for ODE in ODEs:
-		print ODE
-		print 
-	print "_" * 100
-	print "Associated assignments:"
-	print 
+		print ODE + "\n"
+	print "\n" + "_" * 80
+	print "Associated assignments:" + "\n"
 	for assignment in assignments:
 		print assignment[1] + " = " + assignment[2]
 
@@ -77,7 +68,7 @@ def nicePrint(ODEs, assignments):
 input_file = sys.argv[-1]
 file = open(input_file, "r")
 
-parameters, assignments, ODEs, entities = [], [], [], []
+parameters, assignments, ODEs = [], [], []
 
 for line in file:
 	if re.search("# default values", line):
@@ -90,11 +81,9 @@ for line in file:
 		assignments.append(getAssignment(line))
 	if re.search("# reaction", line):
 		entity, ODE = getODE(line)
-		entities.append(entity)
+		parameters.append(entity)
 		ODEs.append(ODE)
 
-parameters += entities
 parameters += map(lambda assignment: (assignment[0], assignment[1]), assignments)
-assignments, parameters = impoveAssignments(assignments, parameters)
 ODEs = replaceODEs(ODEs, parameters)
-nicePrint(ODEs, assignments)
+nicePrint(ODEs, impoveAssignments(assignments, parameters))
