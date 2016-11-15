@@ -85,4 +85,5 @@ for line in file:
 
 parameters += map(lambda assignment: (assignment[0], assignment[1]), assignments)
 ODEs = replaceODEs(ODEs, parameters)
+ODEs = map(lambda ODE: ODE.split(';')[0], ODEs)	# fixes ODEs with constatnt zero concentration
 nicePrint(ODEs, impoveAssignments(assignments, parameters))
