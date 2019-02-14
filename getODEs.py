@@ -41,8 +41,8 @@ def getParameter(line):
 Parse assignment from line containing '# assignment'
 """
 def getAssignment(line):
-	id = re.search('= x\((.*)\) = ', line).group(1)			# searching for '= x(<num>) = ' where num is my id
-	pre = line.split(" = ")[2].split(";")					# splits by ' = ' and then splits 3rd part of it by ';'
+	id = re.search('x\((.*)\) = ', line).group(1)			# searching for '= x(<num>) = ' where num is my id
+	pre = line.split(" = ")[1].split(";")					# splits by ' = ' and then splits 3rd part of it by ';'
 	equation = pre[0]
 	name = pre[1].split(", ")[1].split("  ")[0]				# splits by ', ' and then splits 2nd part of it by '  '
 	return [id, name, equation]
@@ -106,24 +106,28 @@ input_file = sys.argv[-1]
 file = open(input_file, "r")
 
 parameters, paramValues, assignments, ODEs, inits = [], [], [], [], []
+skip = True
 
 for line in file:
-	if re.search("lsode", line):
-		break
 	line = line.rstrip().replace("\"", "")
 
-	if re.search("# fixed,", line):
-		parameters.append(getParameter(line))
-	if re.search("# fixed parameter,", line):
-		paramValues.append(getParamValue(line))
-	if re.search("# assignment,", line):
-		assignments.append(getAssignment(line))
-	if re.search("# reaction", line) or re.search("# ode", line):
-		entity, ODE = getODE(line)
-		parameters.append(entity)
-		ODEs.append(ODE)
-	if re.search("# fixed specie,", line) or re.search("# assignment specie,", line):
+	if re.search("% fixed specie,", line) or re.search("% assignment specie,", line):
 		inits.append(getInitialvalue(line))
+	if re.search("% fixed,", line):
+		parameters.append(getParameter(line))
+	if re.search("% fixed parameter,", line):
+		paramValues.append(getParamValue(line))
+
+	if re.search("function xdot", line):
+		skip = False
+	if not skip:
+		if re.search("% assignment,", line):
+			assignments.append(getAssignment(line))
+		if re.search("% reaction", line) or re.search("% ode", line):
+			entity, ODE = getODE(line)
+			parameters.append(entity)
+			ODEs.append(ODE)
+
 
 paramValues = joinParameters(paramValues, parameters)
 
